@@ -11,8 +11,9 @@ class App extends React.Component{
     this.state = {
       servers : [],
       AddUpdatePanel : false,
-      CurrentClient : 0,
-      CurrenTemperature : 0,
+      CPU_TOTAL : 0,
+      memory_used : 0,
+      temp : 0,
       CoolerTemperature : "OFF"
     }
 
@@ -20,6 +21,7 @@ class App extends React.Component{
     this.onAdditionOfData = this.onAdditionOfData.bind(this)
     this.addToStateArray = this.addToStateArray.bind(this)
     this.onDeleteButton = this.onDeleteButton.bind(this)
+    this.onChangeInput = this.onChangeInput.bind(this)
   }
 
   handleAddUpdate(){
@@ -34,19 +36,15 @@ class App extends React.Component{
     this.setState({
       [event.target.name] : event.target.value
     })
-    // console.log([event.target.name]);
   }
 
   addToStateArray(event){
-    if(this.state.CurrentClient > 0 && this.state.CurrentTemperature > 0){
-      let temp = Date.now()
-      let addValue = {id : temp, client : this.state.CurrentClient, temperature : this.state.CurrentTemperature}
+      let temp = this.state.servers.length + 1
+      let addValue = {id : temp, CPU_TOTAL : this.state.CPU_TOTAL, temp : this.state.temp, memory_used : this.state.memory_used}
       console.log(addValue);
       console.log("Servers : ", this.state.servers);
       this.setState({
         servers : [...this.state.servers, addValue],
-        CurrentTemperature : 0,
-        CurrentClient : 0,
         CoolerTemperature : "Calculating..."
       }, ()=>{
         axios({
@@ -62,7 +60,6 @@ class App extends React.Component{
         })
       })
       event.value = 0
-    }
     event.preventDefault();
   }
 
@@ -88,6 +85,33 @@ class App extends React.Component{
     // console.log(id);
   }
 
+  onChangeInput(value){
+    console.log(value);
+    let updatedList = this.state.servers.map(server => {
+      if(server.id !== value.id){
+        return server
+      }else{
+        return value
+      }
+    })
+    console.log(updatedList);
+    this.setState({
+      servers : updatedList
+    }, ()=>{
+      axios({
+        method : 'post',
+        url : 'http://192.168.43.214:3000/postUpdatedValue',
+        data : value,
+      }).then(res =>{
+        console.log(res);
+        console.log(res.data);
+        this.setState({
+          CoolerTemperature : res.data === 0 ? "OFF" : res.data
+        })
+      })
+    })
+  }
+
   render(){
       const CurrenTemperatureStyle = {
         display : "null"
@@ -99,7 +123,7 @@ class App extends React.Component{
 
       const buttonText = this.state.AddUpdatePanel ? "Return Back" : "Update/Add"
 
-      const allServers = this.state.servers.map(server => <ServerDetails key = {server.id} server = {server} onDeleteButton={this.onDeleteButton}/>)
+      const allServers = this.state.servers.map(server => <ServerDetails key = {server.id} server = {server} onDeleteButton={this.onDeleteButton} onChange={this.onChangeInput}/>)
 
       return(
         <div>
@@ -110,8 +134,9 @@ class App extends React.Component{
           <div style = {!this.state.AddUpdatePanel ?  CurrenTServerDetails : null} className = "server-list">
             <div>
               <form onSubmit = {this.addToStateArray}>
-                <input type="number" name="CurrentClient" placeholder = "Add Number of clients" onChange={this.onAdditionOfData}/>
-                <input type="number" name="CurrentTemperature" placeholder = "Add Tempeature in °C" onChange={this.onAdditionOfData}/>
+                <input type="number" step="0.01" min="0" name="CPU_TOTAL" placeholder = "CPU_TOTAL" onChange={this.onAdditionOfData}/>
+                <input type="number" step="0.01" min="0" name="memory_used" placeholder = "Memory Used" onChange={this.onAdditionOfData}/>
+                <input type="number" step="0.01" min="0" name="temp" placeholder = "Add Tempeature in °C" onChange={this.onAdditionOfData}/>
                 <input type="submit" value="Add"/>
               </form>
             </div>
