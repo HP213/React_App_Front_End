@@ -11,7 +11,7 @@
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1"
   },
-  "proxy": "http://192.168.43.214:3000/",
+  "proxy": "http://127.0.0.1:3000/",
   "scripts": {
     "start": "set PORT=8000 && react-scripts start",
     "build": "react-scripts build",

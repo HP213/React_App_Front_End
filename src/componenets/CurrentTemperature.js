@@ -1,9 +1,7 @@
 import React from "react";
 
 class CurrenTemperature extends React.Component{
-  constructor(){
-    super()
-  }
+
 
   render(){
     return(

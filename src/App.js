@@ -24,6 +24,14 @@ class App extends React.Component{
     this.onChangeInput = this.onChangeInput.bind(this)
   }
 
+  // componentDidMount() {
+  //   axios.get("/test?format=json").then((res)=>{
+  //     console.log(res.data);
+  //   }).catch((err)=>{
+  //     console.log(err.response);
+  //   })
+  // }
+
   handleAddUpdate(){
     this.setState(prevState =>{
       return{
@@ -38,84 +46,52 @@ class App extends React.Component{
     })
   }
 
+  newtonLaw(t0, ts) {
+    return ts-(0.4*(t0-ts));
+  }
+
   addToStateArray(event){
-      let temp = this.state.servers.length + 1
-      let addValue = {id : temp, CPU_TOTAL : this.state.CPU_TOTAL, temp : this.state.temp, memory_used : this.state.memory_used}
-      console.log(addValue);
-      console.log("Servers : ", this.state.servers);
-      this.setState({
-        servers : [...this.state.servers, addValue],
-        CoolerTemperature : "Calculating..."
-      }, ()=>{
-        axios({
-          method : 'post',
-          url : 'http://192.168.43.214:3000/getData',
-          data : this.state.servers,
-        }).then(res =>{
-          console.log(res);
-          console.log(res.data);
-          this.setState({
-            CoolerTemperature : res.data
-          })
-        })
+      let addValue = {CPU_total : this.state.CPU_TOTAL, temp : this.state.temp, memory_used : this.state.memory_used}
+
+      axios.post("predict",addValue).then((res)=>{
+        const temp = res.data;
+        addValue['current_temp'] = temp;
+        addValue['acTemp'] = this.newtonLaw(temp, this.state.temp);
+        this.setState(({
+          servers : [...this.state.servers, addValue],
+        }))
+      }).catch((err)=>{
+        console.log(err.response);
       })
-      event.value = 0
     event.preventDefault();
   }
 
   onDeleteButton(id){
-    let filterdArray = this.state.servers.filter(server => server.id != id)
-    // console.log(filterdArray);
+    let filterdArray = this.state.servers;
+    filterdArray.splice(id,1);
     this.setState({
       servers : filterdArray,
       CoolerTemperature : filterdArray.length > 0 ? this.state.CoolerTemperature : "OFF"
-    }, ()=>{
-      axios({
-        method : 'post',
-        url : 'http://192.168.43.214:3000/getData',
-        data : this.state.servers,
-      }).then(res =>{
-        console.log(res);
-        console.log(res.data);
-        this.setState({
-          CoolerTemperature : res.data === 0 ? "OFF" : res.data
-        })
-      })
-    })
-    // console.log(id);
+    });
   }
 
-  onChangeInput(value){
-    console.log(value);
-    let updatedList = this.state.servers.map(server => {
-      if(server.id !== value.id){
-        return server
-      }else{
-        return value
-      }
-    })
-    console.log(updatedList);
-    this.setState({
-      servers : updatedList
-    }, ()=>{
-      axios({
-        method : 'post',
-        url : 'http://192.168.43.214:3000/postUpdatedValue',
-        data : value,
-      }).then(res =>{
-        console.log(res);
-        console.log(res.data);
-        this.setState({
-          CoolerTemperature : res.data === 0 ? "OFF" : res.data
-        })
-      })
+  onChangeInput(value,index){
+    let updatedList = this.state.servers;
+    updatedList[index] = value;
+    axios.post("multiple",updatedList).then((res)=>{
+      res.forEach((val, index)=>{
+        updatedList[index]['current_temp'] = val;
+        updatedList[index]['acTemp'] = this.newtonLaw(val, this.state.temp);
+      });
+      this.setState(({
+        servers : updatedList,
+      }))
+    }).catch((err)=>{
+      console.log(err.response);
     })
   }
 
   render(){
-      const CurrenTemperatureStyle = {
-        display : "null"
-      }
 
       const CurrenTServerDetails = {
         display : "none"
@@ -123,8 +99,10 @@ class App extends React.Component{
 
       const buttonText = this.state.AddUpdatePanel ? "Return Back" : "Update/Add"
 
-      const allServers = this.state.servers.map(server => <ServerDetails key = {server.id} server = {server} onDeleteButton={this.onDeleteButton} onChange={this.onChangeInput}/>)
-
+      const allServers = [];
+      this.state.servers.forEach((server, index)=>{
+        allServers.push(<ServerDetails key = {index} id={index} server = {server} onDeleteButton={(index) => this.onDeleteButton(index)} onChange={(e,index) => this.onChangeInput(e,index)}/>);
+      });
       return(
         <div>
           <Header />
