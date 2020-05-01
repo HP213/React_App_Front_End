@@ -4,7 +4,7 @@ class ServerDetails extends React.Component{
   constructor(props){
     super();
     this.state = {
-      CPU_TOTAL : props.server.CPU_total,
+      CPU_total : props.server.CPU_total,
       temp: props.server.temp,
       memory_used : props.server.memory_used,
       id : props.id,
@@ -12,11 +12,12 @@ class ServerDetails extends React.Component{
       acTemp: props.server.acTemp,
       disabled : true
     }
-    this.onChangeInput = this.onChangeInput.bind(this)
+    this.onChangeInputValue = this.onChangeInputValue.bind(this)
     this.HandleOnUpdate = this.HandleOnUpdate.bind(this)
   }
 
   componentDidMount() {
+    console.log(this.state.curTemp);
     const interval = setInterval(() => {
       if(this.state.curTemp > this.state.acTemp) {
         this.setState({
@@ -28,8 +29,7 @@ class ServerDetails extends React.Component{
     }, 1000);
   }
 
-  onChangeInput(event){
-    console.log(event.target.value);
+  onChangeInputValue(event){
     this.setState({
       [event.target.name] : event.target.value,
       disabled : false
@@ -37,12 +37,12 @@ class ServerDetails extends React.Component{
   }
 
   HandleOnUpdate(){
-    console.log("Clicked");
     this.setState({
       disabled : true
+    }, ()=>{
+      let temp = {id : this.state.id , CPU_total : this.state.CPU_total, temp : this.state.temp, memory_used : this.state.memory_used}
+      this.props.onChangeUpdate(temp)
     })
-    var temp = {id : this.state.id , CPU_TOTAL : this.state.CPU_TOTAL, temp : this.state.temp, memory_used : this.state.memory_used}
-    this.props.onChange(temp)
   }
 
   render(){
@@ -51,11 +51,11 @@ class ServerDetails extends React.Component{
         <input type="button" value="Delete" onClick = {() => this.props.onDeleteButton(this.state.id)}/>
         <p className="serverPabove">ID:</p>
         <p className="serverP">{this.props.id}</p>
-        <input type="text" step="0.01" min="0" name="CPU_TOTAL" value={this.state.CPU_TOTAL} onChange={e => this.onChangeInput(e)}/>
-        <input type="text" step="0.01" min="0" name="memory_used" value={this.state.memory_used} onChange={e => this.onChangeInput(e)}/>
-        <input type="text" step="0.01" min="0" name="temp" value={this.state.temp} onChange={e => this.onChangeInput(e)}/>
-        <input type="text" readOnly  name="CUR Temp" value={this.state.curTemp}/>
-        <input type="text" readOnly name="AC Temp" value={this.state.acTemp}/>
+        <input type="text" step="0.01" min="0" name="CPU_total" value={this.state.CPU_total} onChange={e => this.onChangeInputValue(e)}/>
+        <input type="text" step="0.01" min="0" name="memory_used" value={this.state.memory_used} onChange={e => this.onChangeInputValue(e)}/>
+        <input type="text" step="0.01" min="0" name="temp" value={this.state.temp} onChange={e => this.onChangeInputValue(e)}/>
+        <input type="text" readOnly  name="curTemp" value={this.state.curTemp}/>
+        <input type="text" readOnly name="acTemp" value={this.state.acTemp}/>
         <input type="button" disabled={this.state.disabled} value="Update" onClick={this.HandleOnUpdate}/>
       </div>
     )

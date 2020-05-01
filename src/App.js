@@ -8,6 +8,7 @@ import './style.css';
 class App extends React.Component{
   constructor(){
     super()
+    this.v = 0;
     this.state = {
       servers : [],
       AddUpdatePanel : false,
@@ -21,7 +22,7 @@ class App extends React.Component{
     this.onAdditionOfData = this.onAdditionOfData.bind(this)
     this.addToStateArray = this.addToStateArray.bind(this)
     this.onDeleteButton = this.onDeleteButton.bind(this)
-    this.onChangeInput = this.onChangeInput.bind(this)
+    this.onChangeUpdate = this.onChangeUpdate.bind(this)
   }
 
   // componentDidMount() {
@@ -75,33 +76,34 @@ class App extends React.Component{
     });
   }
 
-  onChangeInput(value,index){
+  onChangeUpdate(value){
     let updatedList = this.state.servers;
-    updatedList[index] = value;
-    axios.post("multiple",updatedList).then((res)=>{
-      res.forEach((val, index)=>{
-        updatedList[index]['current_temp'] = val;
-        updatedList[index]['acTemp'] = this.newtonLaw(val, this.state.temp);
+    updatedList[value.id] = value;
+    axios.post("multiple",updatedList).then((res) => {
+      res.data.forEach((item, i) => {
+        updatedList[i].current_temp = item;
+        updatedList[i].acTemp = this.newtonLaw(item, value.temp);
       });
-      this.setState(({
-        servers : updatedList,
-      }))
+      this.setState({
+        servers: updatedList
+      })
     }).catch((err)=>{
-      console.log(err.response);
+      console.log(err);
     })
   }
 
   render(){
-
+    console.log(this.state.servers);
       const CurrenTServerDetails = {
         display : "none"
       }
 
       const buttonText = this.state.AddUpdatePanel ? "Return Back" : "Update/Add"
 
-      const allServers = [];
+      let allServers = [];
       this.state.servers.forEach((server, index)=>{
-        allServers.push(<ServerDetails key = {index} id={index} server = {server} onDeleteButton={(index) => this.onDeleteButton(index)} onChange={(e,index) => this.onChangeInput(e,index)}/>);
+      allServers.push(<ServerDetails key = {this.v} id={index} server = {server} onDeleteButton={(index) => this.onDeleteButton(index)} onChangeUpdate={(value) => this.onChangeUpdate(value)}/>);
+        this.v+=1;
       });
       return(
         <div>
