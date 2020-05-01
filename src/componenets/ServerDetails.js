@@ -47,16 +47,24 @@ class ServerDetails extends React.Component{
 
   render(){
     return(
-      <div className="server-item">
-        <input type="button" value="Delete" onClick = {() => this.props.onDeleteButton(this.state.id)}/>
-        <p className="serverPabove">ID:</p>
-        <p className="serverP">{this.props.id}</p>
-        <input type="text" step="0.01" min="0" name="CPU_total" value={this.state.CPU_total} onChange={e => this.onChangeInputValue(e)}/>
-        <input type="text" step="0.01" min="0" name="memory_used" value={this.state.memory_used} onChange={e => this.onChangeInputValue(e)}/>
-        <input type="text" step="0.01" min="0" name="temp" value={this.state.temp} onChange={e => this.onChangeInputValue(e)}/>
-        <input type="text" readOnly  name="curTemp" value={this.state.curTemp}/>
-        <input type="text" readOnly name="acTemp" value={this.state.acTemp}/>
-        <input type="button" disabled={this.state.disabled} value="Update" onClick={this.HandleOnUpdate}/>
+      <div className="card">
+        <div className="Card_button">
+          <input type="button" disabled={this.state.disabled} value="Update" onClick={this.HandleOnUpdate}/>
+          <input type="button" value="Delete" onClick = {() => this.props.onDeleteButton(this.state.id)}/>
+        </div>
+        <div className="container">
+          <h4>Current Temperature : {this.state.curTemp}</h4>
+          <h4>AC Tempeature : {this.state.acTemp}</h4>
+          <label for="">CPU_TOTAL : </label>
+          <input type="text" step="0.01" min="0.01" max="6.0" name="CPU_total" value={this.state.CPU_total} onChange={e => this.onChangeInputValue(e)}/>
+          <label for="">Memory Used : </label>
+          <input type="text" required step="0.01" min="0.01" max="6.0" name="memory_used" value={this.state.memory_used} onChange={e => this.onChangeInputValue(e)}/>
+          <label for="">Room Tempeature : </label>
+          <input type="text" required step="0.1" min="18.0" max="50.0" name="temp" value={this.state.temp} onChange={e => this.onChangeInputValue(e)}/>
+        </div>
+        <div className="idplacement">
+          <h1>{this.props.id}</h1>
+        </div>
       </div>
     )
   }
